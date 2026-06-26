@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  salons    Salon[]
+}
+
+model Salon {
+  id           String        @id @default(uuid())
+  name         String
+  address      String?
+  ownerId      String
+  owner        User          @relation(fields: [ownerId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  clients      Client[]
+  appointments Appointment[]
+}
+
+model Client {
+  id              String           @id @default(uuid())
+  name            String
+  phone           String?
+  salonId         String
+  salon           Salon            @relation(fields: [salonId], references: [id])
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  appointments    Appointment[]
+  serviceHistory  ServiceHistory[]
+}
+
+model Appointment {
+  id          String   @id @default(uuid())
+  date        DateTime
+  status      String   @default("PENDING") // PENDING, CONFIRMED, CANCELLED, COMPLETED
+  
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id])
+  
+  salonId     String
+  salon       Salon    @relation(fields: [salonId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceHistory {
+  id          String   @id @default(uuid())
+  serviceName String
+  price       Float
+  date        DateTime @default(now())
+  
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
